@@ -1,13 +1,15 @@
-# BlinkOCR SDK for real time text recognition
+<p align="center" >
+  <img src="https://raw.githubusercontent.com/wiki/blinkocr/blinkocr-ios/Images/logo-microblink.png" alt="MicroBlink" title="MicroBlink">
+</p>
 
 [![Build Status](https://travis-ci.org/BlinkOCR/blinkocr-ios.png)](https://travis-ci.org/BlinkOCR/blinkocr-ios.png)
 [![Pod Version](http://img.shields.io/cocoapods/v/PPBlinkOCR.svg?style=flat)](http://cocoadocs.org/docsets/PPBlinkOCR/)
 
-BlinkOCR SDK is a state-of-the-art OCR product for mobile devices. It's OCR technology is optimized specifically for mobile devices and architectures. This allows faster results and lower error rate than regular desktop-based OCR software.
 
-Focus on the user experience of your app. Rely on BlinkOCR for fast text recognition.
+# BlinkOCR SDK for real time text recognition
 
-BlinkOCR features:
+BlinkOCR SDK is a state-of-the-art OCR product for mobile devices. It's OCR technology is optimized specifically for mobile devices and architectures. This allows faster results and lower error rate than regular desktop-based OCR software. BlinkOCR features: 
+
 - integrated camera management
 - integrated **text parsing** feature for fields like IBANs, prices, email addresses, urls, and many more!
 - layered API, allowing everything from simple integration to complex UX customizations.
