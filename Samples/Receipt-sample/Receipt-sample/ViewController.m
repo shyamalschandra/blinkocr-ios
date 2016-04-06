@@ -67,6 +67,7 @@
 /**
  * Method allocates and initializes the Scanning coordinator object.
  * Coordinator is initialized with settings for scanning
+ * Modify this method to include only those recognizer settings you need. This will give you optimal performance
  *
  *  @param error Error object, if scanning isn't supported
  *
@@ -93,14 +94,13 @@
     settings.licenseSettings.licenseKey = @"4MQXEMJK-5DEI422A-UNZLLO4M-ZZDAG3O4-NZM3CPLN-3RXFTMJ5-NXOG4WNR-GVYY77XS";
 
     /**
-     * 3. Set up what is being scanned. See detailed guides for specific use cases.
-     * Here's an example for initializing raw OCR scanning.
+     * 3. Set up what is being scanned. See detailed guides for specific use cases in our Getting Started guide.
      */
 
     // To specify we want to perform OCR recognition, initialize the OCR recognizer settings
     PPOcrRecognizerSettings *ocrRecognizerSettings = [[PPOcrRecognizerSettings alloc] init];
 
-    // We want raw OCR parsing
+    // We want extract characters with our customized raw OCR parser
     [ocrRecognizerSettings addOcrParser:[self rawParserForReceipts] name:@"Raw"];
 
     // Add the recognizer setting to a list of used recognizer
@@ -140,10 +140,10 @@
         return;
     }
 
-    /** Allocate and present the scanning view controller */
+    /** Create new scanning view controller */
     UIViewController<PPScanningViewController>* scanningViewController = [coordinator cameraViewControllerWithDelegate:self];
 
-    /** You can use other presentation methods as well */
+    /** Present the scanning view controller. You can use other presentation methods as well (instead of presentViewController) */
     [self presentViewController:scanningViewController animated:YES completion:nil];
 }
 
@@ -167,7 +167,12 @@
 - (void)scanningViewController:(UIViewController<PPScanningViewController> *)scanningViewController
               didOutputResults:(NSArray *)results {
 
-    // Here you process scanning results. Scanning results are given in the array of PPRecognizerResult objects.
+    /**
+     * Here you process scanning results. Scanning results are given in the array of PPRecognizerResult objects.
+     * Each member of results array will represent one result for a single processed image
+     * Usually (and in this sample app) there will be only one result. Multiple results are possible when there are 2 or more detected objects on a single image (i.e. detected OCR
+     * result and pdf417 code in case both recognizers are used)
+     */
 
     // first, pause scanning until we process all the results
     [scanningViewController pauseScanning];
@@ -179,6 +184,8 @@
             PPOcrRecognizerResult* ocrRecognizerResult = (PPOcrRecognizerResult*)result;
 
             NSLog(@"OCR results are:");
+
+            /** We fetch OCR results from different parsers by parser names (which we used when we were creating parsers) */
             NSLog(@"Raw ocr: %@", [ocrRecognizerResult parsedResultForName:@"Raw"]);
         }
     };

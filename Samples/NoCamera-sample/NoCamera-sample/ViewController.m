@@ -33,6 +33,7 @@
 /**
  * Method allocates and initializes the Scanning coordinator object.
  * Coordinator is initialized with settings for scanning
+ * Modify this method to include only those recognizer settings you need. This will give you optimal performance
  *
  *  @param error Error object, if scanning isn't supported
  *
@@ -49,7 +50,7 @@
 
     /** 1. Initialize the Scanning settings */
 
-    // Initialize the scanner settings object. This initialize settings with all default values.
+    // Initialize the scanner settings object. This initialized settings with all default values.
     PPSettings *settings = [[PPSettings alloc] init];
 
 
@@ -60,21 +61,21 @@
 
 
     /**
-     * 3. Set up what is being scanned. See detailed guides for specific use cases.
-     * Here's an example for initializing raw OCR scanning.
+     * 3. Set up what is being scanned. See detailed guides for specific use cases in our Getting Started guide.
      */
 
     // To specify we want to perform OCR recognition, initialize the OCR recognizer settings
     PPOcrRecognizerSettings *ocrRecognizerSettings = [[PPOcrRecognizerSettings alloc] init];
 
-    // We want raw OCR parsing
-    [ocrRecognizerSettings addOcrParser:[self priceOcrParserFactory] name:self.priceParserId];
-
-    // We want to parse prices from raw OCR result as well
+    // We want extract raw OCR, this outputs all recognized characters on an image
     [ocrRecognizerSettings addOcrParser:[self rawOcrParserFactory] name:self.rawOcrParserId];
 
-    // Add the recognizer setting to a list of used recognizer
+    // We want to extract price, this outputs all recognized prices/amounts on an image
+    [ocrRecognizerSettings addOcrParser:[[PPPriceOcrParserFactory alloc] init] name:self.priceParserId];
+
+    // Add the recognizer setting to a list of used recognizers
     [settings.scanSettings addRecognizerSettings:ocrRecognizerSettings];
+
 
 
     /** 4. Initialize the Scanning Coordinator object */
@@ -82,10 +83,6 @@
     PPCoordinator *coordinator = [[PPCoordinator alloc] initWithSettings:settings];
     
     return coordinator;
-}
-
-- (PPPriceOcrParserFactory *)priceOcrParserFactory {
-    return [[PPPriceOcrParserFactory alloc] init];
 }
 
 - (PPRawOcrParserFactory *)rawOcrParserFactory {
@@ -187,6 +184,7 @@
     if (CFStringCompare((CFStringRef) mediaType, kUTTypeImage, 0) == kCFCompareEqualTo) {
         UIImage *originalImage = (UIImage *)[info objectForKey: UIImagePickerControllerOriginalImage];
 
+        // Process the selected image
         [self.coordinator processImage:originalImage
                         scanningRegion:CGRectMake(0.0, 0.0, 1.0, 1.0)
                               delegate:self];
@@ -213,20 +211,29 @@
 - (void)scanningViewController:(UIViewController<PPScanningViewController>*)scanningViewController
               didOutputResults:(NSArray*)results {
 
-    // Here you process scanning results. Scanning results are given in the array of PPRecognizerResult objects.
-    // Perform your logic here
+    /**
+     * Here you process scanning results. Scanning results are given in the array of PPRecognizerResult objects.
+     * Each member of results array will represent one result for a single processed image
+     * Usually (and in this sample app) there will be only one result. Multiple results are possible when there are 2 or more detected objects on a single image (i.e. detected OCR
+     * result and pdf417 code in case both recognizers are used)
+     */
 
     NSString *title = @"No result";
     NSString *message = nil;
 
+    // Collect data from the result
     for (PPRecognizerResult *result in results) {
         if ([result isKindOfClass:[PPOcrRecognizerResult class]]) {
+            /** Characters were detected */
             PPOcrRecognizerResult* ocrRecognizerResult = (PPOcrRecognizerResult*)result;
 
             NSLog(@"OCR results are:");
+
+            /** We fetch OCR results from different parsers by parser names (which we used when we were creating parsers) */
             NSLog(@"Raw ocr: %@", [ocrRecognizerResult parsedResultForName:self.rawOcrParserId]);
             NSLog(@"Price: %@", [ocrRecognizerResult parsedResultForName:self.priceParserId]);
 
+            // Positions of detected characters
             PPOcrLayout* ocrLayout = [ocrRecognizerResult ocrLayout];
             NSLog(@"Dimensions of ocrLayout are %@", NSStringFromCGRect([ocrLayout box]));
 
